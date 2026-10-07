@@ -2,6 +2,8 @@
 
 A small REST API (viewsets + mixins) on top of `bincom_test.sql`, with three pages that call it.
 
+Live Demo: https://bincom-polls-439334caafe4.herokuapp.com/
+
 | Page | URL | API behind it |
 |---|---|---|
 | Q1 Polling unit result | `/polling-unit/` | `GET /api/lgas/`, `/api/wards/?lga=&with_units=1`, `/api/polling-units/?lga=&ward=`, `/api/polling-units/<id>/` |
