@@ -1,0 +1,28 @@
+{% extends "results/base.html" %}
+{% block title %}LGA total{% endblock %}
+{% block content %}
+<h1>LGA summed total</h1>
+<p class="muted">The sum of all polling-unit results under a local government.</p>
+<div class="card">
+  <label for="lga" style="margin-top:0">Local government (LGA)</label>
+  <select id="lga"><option value="">Loading...</option></select>
+</div>
+<div id="out"></div>
+
+{% include "results/_js.html" %}
+<script>
+const lga = $("lga"), out = $("out");
+lga.addEventListener("change", async () => {
+  out.innerHTML = "";
+  if (!lga.value) return;
+  try {
+    const d = await api("/api/lgas/" + lga.value + "/total/");
+    out.innerHTML = '<div class="card"><h2>' + esc(d.lga_name) + "</h2>" + (d.scores.length
+      ? '<div class="muted">Based on ' + d.units_counted + " polling unit" + (d.units_counted === 1 ? "" : "s") +
+        " with results (out of " + d.units_in_lga + " in this LGA).</div>" + scoresTable(d.scores, "All parties", d.total)
+      : '<div class="alert warn" style="margin-top:12px">No polling-unit results have been recorded under this LGA.</div>') + "</div>";
+  } catch (e) { out.innerHTML = '<div class="alert warn">Could not load the total. Please try again.</div>'; }
+});
+(async () => fill(lga, await api("/api/lgas/"), "Select an LGA", "lga_id", lgaLabel))();
+</script>
+{% endblock %}

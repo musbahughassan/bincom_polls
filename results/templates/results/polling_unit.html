@@ -1,0 +1,68 @@
+{% extends "results/base.html" %}
+{% block title %}Polling unit result{% endblock %}
+{% block content %}
+<h1>Polling unit result</h1>
+<p class="muted">Choose an LGA, then a ward, then a polling unit. A ✓ marks polling units that have results.</p>
+<div id="saved" class="alert ok" hidden>Saved! The new polling unit's results are shown below.</div>
+
+<form id="form" class="card">
+  <label for="lga">Local government (LGA)</label>
+  <select id="lga" required><option value="">Loading...</option></select>
+  <label for="ward">Ward</label>
+  <select id="ward" required disabled><option value="">Select an LGA first</option></select>
+  <label for="pu">Polling unit</label>
+  <select id="pu" required disabled><option value="">Select a ward first</option></select>
+  <button class="btn" type="submit">Show result</button>
+</form>
+<div id="out"></div>
+
+{% include "results/_js.html" %}
+<script>
+const lga = $("lga"), ward = $("ward"), unit = $("pu"), out = $("out");
+
+async function loadWards() {
+  fill(unit, [], "Select a ward first", "uniqueid", unitLabel);
+  if (!lga.value) return fill(ward, [], "Select an LGA first", "uniqueid", wardLabel);
+  fill(ward, [], "Loading wards...", "uniqueid", wardLabel);
+  try {
+    const items = await api("/api/wards/?lga=" + lga.value + "&with_units=1");
+    fill(ward, items, items.length ? "Select a ward" : "No wards found", "uniqueid", wardLabel);
+  } catch (e) { fill(ward, [], "Could not load wards", "uniqueid", wardLabel); }
+}
+async function loadUnits() {
+  if (!ward.value) return fill(unit, [], "Select a ward first", "uniqueid", unitLabel);
+  fill(unit, [], "Loading polling units...", "uniqueid", unitLabel);
+  try {
+    const items = await api("/api/polling-units/?lga=" + lga.value + "&ward=" + ward.value);
+    fill(unit, items, items.length ? "Select a polling unit" : "No polling units found", "uniqueid", unitLabel);
+  } catch (e) { fill(unit, [], "Could not load polling units", "uniqueid", unitLabel); }
+}
+function render(d) {
+  out.innerHTML = '<div class="card"><h2>' + esc(d.label) + '</h2><div class="muted">' + esc(d.lga_name || "-") +
+    " &rsaquo; " + esc(d.ward_name || "-") + "</div>" +
+    (d.results.length ? scoresTable(d.results, "Total", d.total)
+      : '<div class="alert warn" style="margin-top:12px">No results have been recorded for this polling unit.</div>') + "</div>";
+}
+async function show(id) {
+  try { render(await api("/api/polling-units/" + id + "/")); }
+  catch (e) { out.innerHTML = '<div class="alert warn">That polling unit was not found.</div>'; }
+}
+
+lga.addEventListener("change", loadWards);
+ward.addEventListener("change", loadUnits);
+$("form").addEventListener("submit", (e) => { e.preventDefault(); if (unit.value) show(unit.value); });
+
+(async function init() {
+  fill(lga, await api("/api/lgas/"), "Select an LGA", "lga_id", lgaLabel);
+  const params = new URLSearchParams(location.search), pu = params.get("pu");
+  $("saved").hidden = !params.get("saved");
+  if (!pu) return;
+  try {  // arrived with ?pu=ID (e.g. after saving): pre-select the whole chain
+    const d = await api("/api/polling-units/" + pu + "/");
+    lga.value = d.lga_id; await loadWards();
+    ward.value = d.uniquewardid; await loadUnits();
+    unit.value = d.uniqueid; render(d);
+  } catch (e) { show(pu); }
+})();
+</script>
+{% endblock %}

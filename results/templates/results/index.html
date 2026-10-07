@@ -1,0 +1,10 @@
+{% extends "results/base.html" %}
+{% block content %}
+<h1>Election results</h1>
+<p class="muted">Dummy 2011 results for Delta State (state id 25).</p>
+<div class="links">
+  <a href="{% url 'polling_unit' %}"><div class="card"><h2>1. Polling unit result</h2><span class="muted">Pick an LGA, ward and polling unit to see each party's score.</span></div></a>
+  <a href="{% url 'lga_total' %}"><div class="card"><h2>2. LGA summed total</h2><span class="muted">Total of all polling units under a local government.</span></div></a>
+  <a href="{% url 'new_result' %}"><div class="card"><h2>3. Add results</h2><span class="muted">Store the results of every party for a new polling unit.</span></div></a>
+</div>
+{% endblock %}

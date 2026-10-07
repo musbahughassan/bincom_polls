@@ -1,0 +1,52 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{% block title %}Election Results{% endblock %} | Bincom Test</title>
+  <style>
+    :root { --brand:#1f4e78; --bg:#f4f6f9; --line:#d9dee5; --ok:#1e7a3c; --err:#b3261e; }
+    * { box-sizing: border-box; }
+    body { margin:0; font-family: system-ui, -apple-system, "Segoe UI", Arial, sans-serif; background:var(--bg); color:#1c2530; }
+    header { background:var(--brand); color:#fff; }
+    header .wrap { display:flex; flex-wrap:wrap; align-items:center; gap:8px 24px; padding:12px 16px; }
+    header strong { font-size:1.05rem; }
+    nav a { color:#dbe7f3; text-decoration:none; margin-right:14px; padding:4px 0; border-bottom:2px solid transparent; }
+    nav a:hover, nav a.active { color:#fff; border-bottom-color:#fff; }
+    .wrap { max-width:760px; margin:0 auto; }
+    main.wrap { padding:20px 16px 48px; }
+    .card { background:#fff; border:1px solid var(--line); border-radius:10px; padding:18px; margin-bottom:18px; }
+    h1 { font-size:1.4rem; margin:0 0 4px; } h2 { font-size:1.1rem; margin:0 0 10px; }
+    .muted { color:#5b6776; font-size:.92rem; }
+    label { display:block; font-weight:600; margin:14px 0 5px; }
+    select, input[type=text], input[type=number], textarea { width:100%; padding:10px; font:inherit; border:1px solid #b8c1cc; border-radius:7px; background:#fff; }
+    select:disabled { background:#eef1f4; color:#8a94a0; }
+    .btn { display:inline-block; margin-top:18px; padding:10px 20px; font:inherit; font-weight:600; background:var(--brand); color:#fff; border:0; border-radius:7px; cursor:pointer; text-decoration:none; }
+    .btn:hover { filter:brightness(1.1); }
+    table { width:100%; border-collapse:collapse; margin-top:8px; }
+    th, td { padding:9px 10px; text-align:left; border-bottom:1px solid var(--line); }
+    th { background:#eef3f8; } td.num, th.num { text-align:right; font-variant-numeric:tabular-nums; }
+    tr.total td { font-weight:700; border-top:2px solid #9fb0c2; background:#f8fafc; }
+    .alert { padding:10px 14px; border-radius:7px; margin-bottom:16px; }
+    .alert.ok { background:#e6f4ea; color:var(--ok); border:1px solid #b9dcc4; }
+    .alert.warn { background:#fff6e0; color:#7a5a00; border:1px solid #ecd9a3; }
+    .error { color:var(--err); font-size:.88rem; margin-top:4px; }
+    .grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(210px,1fr)); gap:4px 16px; }
+    .links { display:grid; gap:14px; } .links a { text-decoration:none; color:inherit; }
+    .links .card:hover { border-color:var(--brand); } .links h2 { color:var(--brand); }
+  </style>
+</head>
+<body>
+  <header>
+    <div class="wrap">
+      <strong>Delta State Election Results</strong>
+      <nav>
+        <a href="{% url 'polling_unit' %}" {% if request.resolver_match.url_name == 'polling_unit' %}class="active"{% endif %}>Polling unit</a>
+        <a href="{% url 'lga_total' %}" {% if request.resolver_match.url_name == 'lga_total' %}class="active"{% endif %}>LGA total</a>
+        <a href="{% url 'new_result' %}" {% if request.resolver_match.url_name == 'new_result' %}class="active"{% endif %}>Add results</a>
+      </nav>
+    </div>
+  </header>
+  <main class="wrap">{% block content %}{% endblock %}</main>
+</body>
+</html>

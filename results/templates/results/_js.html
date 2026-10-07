@@ -1,0 +1,25 @@
+<script>
+const $ = (id) => document.getElementById(id);
+const esc = (s) => String(s).replace(/[&<>"']/g, (c) => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+
+async function api(url, options) {
+  const r = await fetch(url, options);
+  const body = await r.json().catch(() => null);
+  if (!r.ok) { const e = new Error("HTTP " + r.status); e.status = r.status; e.body = body; throw e; }
+  return body;
+}
+function fill(sel, items, placeholder, valueKey, labelOf) {
+  sel.innerHTML = "";
+  sel.add(new Option(placeholder, ""));
+  items.forEach((i) => sel.add(new Option(labelOf(i), i[valueKey])));
+  sel.disabled = items.length === 0;
+}
+function scoresTable(rows, totalLabel, total) {
+  return '<table><tr><th>Party</th><th class="num">Score</th></tr>' +
+    rows.map((r) => "<tr><td>" + esc(r.party) + '</td><td class="num">' + r.score + "</td></tr>").join("") +
+    '<tr class="total"><td>' + esc(totalLabel) + '</td><td class="num">' + total + "</td></tr></table>";
+}
+const wardLabel = (w) => w.ward_name;
+const unitLabel = (u) => u.label;
+const lgaLabel = (l) => l.lga_name;
+</script>

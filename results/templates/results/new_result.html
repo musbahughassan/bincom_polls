@@ -1,0 +1,99 @@
+{% extends "results/base.html" %}
+{% block title %}Add results{% endblock %}
+{% block content %}
+<h1>Add results for a new polling unit</h1>
+<p class="muted">Fill in the polling unit details and the score of every party. All fields marked * are required.</p>
+<div id="banner" class="alert warn" hidden></div>
+
+<form id="form" novalidate>
+  <div class="card">
+    <h2>Location</h2>
+    <label for="lga">Local government (LGA) *</label>
+    <select id="lga"><option value="">Loading...</option></select>
+    <div class="error" data-err="lga_id"></div>
+
+    <label for="ward">Ward *</label>
+    <select id="ward" disabled><option value="">Select an LGA first</option></select>
+    <div class="error" data-err="uniquewardid"></div>
+
+    <label for="name">Polling unit name *</label>
+    <input type="text" id="name" maxlength="50">
+    <div class="error" data-err="polling_unit_name"></div>
+
+    <label for="number">Polling unit number</label>
+    <input type="text" id="number" maxlength="50">
+    <div class="error" data-err="polling_unit_number"></div>
+
+    <label for="description">Description</label>
+    <textarea id="description" rows="2"></textarea>
+    <div class="error" data-err="polling_unit_description"></div>
+  </div>
+
+  <div class="card">
+    <h2>Party scores</h2>
+    <div class="grid" id="scores"></div>
+    <div class="error" data-err="scores"></div>
+  </div>
+
+  <div class="card">
+    <label for="by" style="margin-top:0">Your name *</label>
+    <input type="text" id="by" maxlength="50">
+    <div class="error" data-err="entered_by_user"></div>
+    <button class="btn" id="save" type="submit">Save results</button>
+  </div>
+</form>
+
+{% include "results/_js.html" %}
+<script>
+const lga = $("lga"), ward = $("ward"), form = $("form");
+
+lga.addEventListener("change", async () => {
+  if (!lga.value) return fill(ward, [], "Select an LGA first", "uniqueid", wardLabel);
+  fill(ward, [], "Loading wards...", "uniqueid", wardLabel);
+  try {
+    const items = await api("/api/wards/?lga=" + lga.value);
+    fill(ward, items, items.length ? "Select a ward" : "No wards found", "uniqueid", wardLabel);
+  } catch (e) { fill(ward, [], "Could not load wards", "uniqueid", wardLabel); }
+});
+
+function showErrors(body) {
+  document.querySelectorAll("[data-err]").forEach((el) => (el.textContent = ""));
+  const set = (key, msg) => { const el = document.querySelector('[data-err="' + key + '"]'); if (el) el.textContent = [].concat(msg).join(" "); };
+  Object.entries(body || {}).forEach(([key, msg]) => {
+    if (key === "scores" && !Array.isArray(msg) && typeof msg === "object") Object.entries(msg).forEach(([p, m]) => set("score_" + p, m));
+    else set(key, msg);
+  });
+  $("banner").textContent = "Please fix the highlighted fields and submit again.";
+  $("banner").hidden = false;
+}
+
+form.addEventListener("submit", async (e) => {
+  e.preventDefault();
+  const scores = {};
+  document.querySelectorAll("[data-party]").forEach((i) => (scores[i.dataset.party] = i.value.trim()));
+  const payload = {
+    lga_id: lga.value ? Number(lga.value) : null,
+    uniquewardid: ward.value ? Number(ward.value) : null,
+    polling_unit_name: $("name").value, polling_unit_number: $("number").value,
+    polling_unit_description: $("description").value, entered_by_user: $("by").value, scores,
+  };
+  $("save").disabled = true;
+  try {
+    const d = await api("/api/polling-units/", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(payload) });
+    location.href = "{% url 'polling_unit' %}?pu=" + d.uniqueid + "&saved=1";
+  } catch (err) {
+    if (err.status === 400) showErrors(err.body);
+    else { $("banner").textContent = "Could not save. Please try again."; $("banner").hidden = false; }
+    $("save").disabled = false;
+  }
+});
+
+(async function init() {
+  fill(lga, await api("/api/lgas/"), "Select an LGA", "lga_id", lgaLabel);
+  const parties = await api("/api/parties/");
+  $("scores").innerHTML = parties.map((p) => '<div><label for="s_' + esc(p.partyid) + '">' + esc(p.partyid) + ' *</label>' +
+    '<input type="number" min="0" step="1" inputmode="numeric" id="s_' + esc(p.partyid) + '" data-party="' + esc(p.partyid) + '">' +
+    '<div class="error" data-err="score_' + esc(p.partyid) + '"></div></div>').join("");
+})();
+</script>
+{% endblock %}
