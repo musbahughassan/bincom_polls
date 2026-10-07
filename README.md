@@ -8,7 +8,7 @@ A small REST API (viewsets + mixins) on top of `bincom_test.sql`, with three pag
 | Q2 LGA summed total | `/lga-total/` | `GET /api/lgas/<lga_id>/total/` (computed from `announced_pu_results`, **not** `announced_lga_results`) |
 | Q3 Add results | `/new-result/` | `GET /api/parties/`, `GET /api/wards/?lga=`, `POST /api/polling-units/` |
 
-`/api/` also gives the browsable API, handy for showing the endpoints in an interview.
+`/api/` also gives the browsable API, handy 
 
 ## Code layout
 
@@ -35,8 +35,8 @@ A small REST API (viewsets + mixins) on top of `bincom_test.sql`, with three pag
 
 3. Install and run:
 
-       python3 -m venv venv && source venv/bin/activate
-       pip install -r requirements.txt
+       
+       ppipenv install
        python manage.py runserver
 
    Open http://127.0.0.1:8000/
