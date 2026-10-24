@@ -38,7 +38,7 @@ Live Demo: https://bincom-polls-439334caafe4.herokuapp.com/
 3. Install and run:
 
        
-       ppipenv install
+       pipenv install
        python manage.py runserver
 
    Open http://127.0.0.1:8000/
