@@ -39,6 +39,7 @@ Live Demo: https://bincom-polls-439334caafe4.herokuapp.com/
 
        
        pipenv install
+       python manage.py collectstatic
        gunicorn bincompolls.wsgi
 
    Open http://127.0.0.1:8000/
